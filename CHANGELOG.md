@@ -2,6 +2,14 @@
 All releases of the BOSH CPI for Google Cloud Platform will be documented in
 this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Added
+- New `update_disk` CPI action that supports resizing and changing disk types (e.g. `pd-ssd` to `hyperdisk-balanced`) while a disk is detached during VM recreation. When the disk type changes, the action snapshots the existing disk, creates a new disk from the snapshot, and deletes the old disk.
+
+### Changed
+- **Backwards-compatible behaviour**: if the GCP service account lacks the `compute.snapshots.useReadOnly` permission required for snapshot-based disk type changes, `update_disk` returns `Bosh::Clouds::NotSupported` instead of failing with a 403. The BOSH director will automatically fall back to the standard copy-based disk update path. To enable the full native disk type change flow, add `compute.snapshots.useReadOnly` to the service account's permissions (see `docs/bosh-director-role.yml`).
+
 ## [30.0.0] - 2019-01-04
 
 ### Added
@@ -18,7 +26,7 @@ this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Logs are returned in response to BOSH, making them viewable in task log
-- If a disk is already attached to a VM, it will only be attached via the BOSH agent
+- If a disk is already atNtached to a VM, it will only be attached via the BOSH agent
 
 ## [28.0.1] - 2018-10-02
 
