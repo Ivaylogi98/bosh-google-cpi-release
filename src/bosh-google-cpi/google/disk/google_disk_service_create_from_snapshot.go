@@ -3,6 +3,8 @@ package disk
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"strings"
 
 	bosherr "github.com/cloudfoundry/bosh-utils/errors"
 	"google.golang.org/api/compute/v1"
@@ -40,7 +42,8 @@ func (d GoogleDiskService) CreateFromSnapshot(snapshotSelfLink string, size int,
 	d.logger.Debug(googleDiskServiceLogTag, "Creating Google Disk from snapshot with params: %#v", disk)
 	operation, err := d.computeService.Disks.Insert(d.project, util.ResourceSplitter(zone), disk).Do()
 	if err != nil {
-		if gerr, ok := err.(*googleapi.Error); ok && gerr.Code == 403 {
+		if gerr, ok := err.(*googleapi.Error); ok && gerr.Code == http.StatusForbidden &&
+			strings.Contains(strings.ToLower(gerr.Message), "compute.snapshots.usereadonly") {
 			return "", ErrSnapshotPermissionDenied
 		}
 		return "", bosherr.WrapErrorf(err, "Failed to create Google Disk from snapshot")
