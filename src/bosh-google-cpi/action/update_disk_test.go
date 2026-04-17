@@ -241,6 +241,7 @@ var _ = Describe("UpdateDisk", func() {
 				Expect(err).To(HaveOccurred())
 				Expect(err).To(Equal(api.NotSupportedError{}))
 				Expect(snapshotService.DeleteCalled).To(BeTrue())
+				Expect(diskService.DeleteCalled).To(BeFalse())
 			})
 
 			It("returns new disk CID with error if old disk deletion fails", func() {
