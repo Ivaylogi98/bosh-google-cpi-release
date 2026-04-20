@@ -111,7 +111,11 @@ func (ud UpdateDisk) Run(diskCID DiskCID, newSize int, cloudProps DiskCloudPrope
 	newDiskID, err := ud.diskService.CreateFromSnapshot(snap.SelfLink, sizeGib, diskTypeSelfLink, zone)
 	if err != nil {
 		if errors.Is(err, disk.ErrSnapshotPermissionDenied) {
-			return nil, api.NotSupportedError{}
+			return nil, api.NewInsufficientPermissionsError(
+				"Updating disk: the GCP service account is missing the compute.snapshots.useReadOnly permission " +
+					"required to create a disk from snapshot. Add the permission to enable native disk type changes, " +
+					"or the director will fall back to the copy-based update path.",
+			)
 		}
 		return nil, bosherr.WrapErrorf(err, "Updating disk '%s': recreating from snapshot '%s'", diskCID, snapshotID)
 	}
